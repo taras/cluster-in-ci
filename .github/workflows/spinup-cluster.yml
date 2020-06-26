@@ -16,9 +16,10 @@ jobs:
     - name: Install PodInfo
       run: |
         helm repo add podinfo https://stefanprodan.github.io/podinfo
-        sudo helm upgrade --install --wait frontend \
-        --namespace test \
-        --set replicaCount=2 \
-        --set backend=http://backend-podinfo:9898/echo \
-        podinfo/podinfo
-        helm test frontend
+        # sudo helm upgrade --install --wait frontend \
+        #   --namespace test \
+        #   --set replicaCount=2 \
+        #   --set backend=http://backend-podinfo:9898/echo \
+        # podinfo/podinfo
+        # helm test frontend
+    - uses: mxschmitt/action-tmate@v2
