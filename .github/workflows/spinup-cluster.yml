@@ -15,4 +15,6 @@ jobs:
     - run: sudo microk8s enable dns ingress
     - name: Install Infopod
       run: sudo microk8s kubectl apply -k github.com/stefanprodan/podinfo//kustomize
+    - run: sudo microk8s kubectl expose deployment podinfo --type=LoadBalancer --name=podinfo-http
+    - run: sudo microk8s kubectl get services podinfo-http
     - uses: mxschmitt/action-tmate@v2
