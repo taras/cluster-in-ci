@@ -11,11 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: sudo snap install microk8s --classic --channel=1.18/stable
-    - run: |
-        alias microk8s="sudo microk8s"
-        alias k="sudo microk8s kubectl"
-    - run: microk8s status --wait-ready
+    - run: sudo microk8s status --wait-ready
     - name: Install Infopod
-      run: |
-        k apply -k github.com/stefanprodan/podinfo//kustomize
+      run: sudo microk8s kubectl apply -k github.com/stefanprodan/podinfo//kustomize
     - uses: mxschmitt/action-tmate@v2
