@@ -11,6 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: sudo snap install microk8s --classic --channel=1.18/stable
-    - run: sudo usermod -a -G microk8s $USER
-    - run: sudo chown -f -R $USER ~/.kube
+    - run: |
+        sudo usermod -a -G microk8s $USER
+        sudo chown -f -R $USER ~/.kube
     - uses: mxschmitt/action-tmate@v2
