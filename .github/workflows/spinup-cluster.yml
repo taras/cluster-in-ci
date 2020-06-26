@@ -11,15 +11,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: sudo snap install microk8s --classic --channel=1.18/stable
-    - run: sudo snap install helm --classic
-    - run: sudo microk8s status --wait-ready
-    - name: Install PodInfo
+    - run: |
+        alias microk8s="sudo microk8s"
+        alias k="sudo microk8s kubectl"
+    - run: microk8s status --wait-ready
+    - name: Install Infopod
       run: |
-        helm repo add podinfo https://stefanprodan.github.io/podinfo
-        # sudo helm upgrade --install --wait frontend \
-        #   --namespace test \
-        #   --set replicaCount=2 \
-        #   --set backend=http://backend-podinfo:9898/echo \
-        # podinfo/podinfo
-        # helm test frontend
+        k apply -k github.com/stefanprodan/podinfo//kustomize
     - uses: mxschmitt/action-tmate@v2
