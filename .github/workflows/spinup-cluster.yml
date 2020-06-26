@@ -13,4 +13,12 @@ jobs:
     - run: sudo snap install microk8s --classic --channel=1.18/stable
     - run: sudo snap install helm --classic
     - run: sudo microk8s status --wait-ready
-
+    - name: Install PodInfo
+      run: |
+        helm repo add podinfo https://stefanprodan.github.io/podinfo
+        sudo helm upgrade --install --wait frontend \
+        --namespace test \
+        --set replicaCount=2 \
+        --set backend=http://backend-podinfo:9898/echo \
+        podinfo/podinfo
+        helm test frontend
