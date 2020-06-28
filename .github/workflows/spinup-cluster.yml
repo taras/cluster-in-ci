@@ -10,9 +10,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Setup aliases
+      run: |
+        cat <<EOT >> $HOME/.bashrc
+          alias kubectl="sudo microk8s kubectl"
+          alias microk8s="sudo microk8s"
+          alias helm="sudo microk8s helm"
+        EOT
+
     - run: sudo snap install microk8s --classic --channel=1.18/stable
-    - run: sudo microk8s status --wait-ready
-    - run: sudo microk8s enable dns
-    - run: mkdir $HOME/.cloudflared && echo $CLOUDFLARED_TUNNEL_PEM > $HOME/.cloudflared/cert.pem
-    - run: sudo microk8s kubectl create secret generic taras.app --from-file="$HOME/.cloudflared/cert.pem"
-    - run: sudo microk8s kubectl get secret
+    - run: microk8s status --wait-ready
+    - run: microk8s enable dns helm
+
+    - name: Create Cloudflare Credentials file
+      run: mkdir $HOME/.cloudflared && echo $CLOUDFLARED_TUNNEL_PEM > $HOME/.cloudflared/cert.pem
+
+    - name: Write Cloudflare Credentials to Kubernetes secrets
+      run: kubectl create secret generic taras.app --from-file="$HOME/.cloudflared/cert.pem"
+    - run: kubectl get secret
+
+    - run: helm --version
