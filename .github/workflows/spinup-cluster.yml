@@ -13,14 +13,16 @@ jobs:
 
     - name: Setup aliases
       run: |
-        cat <<EOT >> $HOME/.bashrc
+        cat <<EOT >> $HOME/.bash_profile
           alias kubectl="sudo microk8s kubectl"
           alias microk8s="sudo microk8s"
           alias helm="sudo microk8s helm"
         EOT
+        source $HOME/.bash_profile
 
     - run: sudo snap install microk8s --classic --channel=1.18/stable
     - run: microk8s status --wait-ready
+      
     - run: microk8s enable dns helm
 
     - name: Create Cloudflare Credentials file
