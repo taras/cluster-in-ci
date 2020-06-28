@@ -17,8 +17,8 @@ jobs:
     - name: Verify that microk8s started
       run: sudo microk8s status --wait-ready
 
-    - name: "Enable microk8s extensions: dns, helm3, ingress"
-      run: sudo microk8s enable dns helm3 ingress
+    - name: "Enable microk8s extensions: dns, helm3"
+      run: sudo microk8s enable dns helm3
 
     - name: Create Cloudflare Credentials file
       run: mkdir $HOME/.cloudflared && echo $CLOUDFLARED_TUNNEL_PEM > $HOME/.cloudflared/cert.pem
@@ -33,8 +33,6 @@ jobs:
         --set replicaCount=1 \
         --set backend=http://backend-podinfo:9898/echo \
         podinfo/podinfo
-
-    - uses: mxschmitt/action-tmate@v2
-
+    
     - name: "Test podinfo has hook-delete-policy: hook-succeeded"
       run: sudo microk8s helm3 test frontend
