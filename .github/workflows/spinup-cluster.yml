@@ -25,7 +25,6 @@ jobs:
     - run: sudo microk8s helm3 repo add podinfo https://stefanprodan.github.io/podinfo
     - run: |
         sudo microk8s helm3 upgrade --install --wait frontend \
-        --namespace test \
         --set replicaCount=1 \
         --set backend=http://backend-podinfo:9898/echo \
         podinfo/podinfo
