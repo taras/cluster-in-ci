@@ -21,7 +21,7 @@ jobs:
         npm install -g cloudflare-cli
         cfcli ls 
       env:
-        CF_API_KEY: $CLOUDFLARE_DNS_API_TOKEN
+        CF_API_KEY: ${{secrets.CLOUDFLARE_DNS_API_TOKEN}}
         CF_API_DOMAIN: taras.dev      
 
     # - name: Install microk8s with snap
