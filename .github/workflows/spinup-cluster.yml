@@ -22,7 +22,7 @@ jobs:
         cfcli ls 
       env:
         CF_API_KEY: ${{secrets.CLOUDFLARE_DNS_API_TOKEN}}
-        CF_API_DOMAIN: taras.dev      
+        CF_API_DOMAIN: taras.app
 
     # - name: Install microk8s with snap
     #   run: sudo snap install microk8s --classic --channel=1.18/stable
@@ -34,7 +34,7 @@ jobs:
     #   run: sudo microk8s enable dns helm3
 
     # - name: Create Cloudflare Credentials file
-    #   run: mkdir $HOME/.cloudflared && echo $CLOUDFLARED_TUNNEL_PEM > $HOME/.cloudflared/cert.pem
+    #   run: mkdir $HOME/.cloudflared && echo ${{secrets.CLOUDFLARED_TUNNEL_PEM}} > $HOME/.cloudflared/cert.pem
 
     # - name: Write Cloudflare Credentials to Kubernetes secrets
     #   run: sudo microk8s kubectl create secret generic taras.app --from-file="$HOME/.cloudflared/cert.pem"
