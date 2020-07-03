@@ -11,13 +11,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: "Test CloudFlare CLI"
-      uses: dpig/cloudflare-cli:latest
-      run: cfcli ls
+    - name: Install Cloudflare CLI
+      run: |
+        npm install -g cloudflare-cli
+        cfcli ls 
       env:
         CF_API_KEY: $CLOUDFLARE_DNS_API_TOKEN
-        CF_API_DOMAIN: taras.dev
-
+        CF_API_DOMAIN: taras.dev      
 
     # - name: Install microk8s with snap
     #   run: sudo snap install microk8s --classic --channel=1.18/stable
