@@ -13,7 +13,7 @@ jobs:
       run: |
         export PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
         echo "::set-env name=PR_NUMBER::$PR_NUMBER"
-        echo "::set-env name=CLUSTER_HOST::pr-$PR_NUMBER-cluster-in-ci.taras.app"
+        echo "::set-env name=TUNNEL_HOSTNAME::pr-$PR_NUMBER-cluster-in-ci.taras.app"
 
     - name: Create Cloudflare Credentials file
       run: mkdir $HOME/.cloudflared && echo $CERT_PEM > $HOME/.cloudflared/cert.pem
@@ -30,11 +30,60 @@ jobs:
       run: sudo microk8s enable dns helm3
 
     - name: Write Cloudflare Credentials to Kubernetes secrets
-      run: sudo microk8s kubectl create secret generic $CLUSTER_HOST --from-file="$HOME/.cloudflared/cert.pem"
+      run: sudo microk8s kubectl create secret generic $TUNNEL_HOSTNAME --from-file="$HOME/.cloudflared/cert.pem"
     - run: sudo microk8s kubectl get secret
 
     - name: Start podinfo
-      run: sudo microk8s kubectl apply -k github.com/stefanprodan/podinfo//kustomize
+      run: |
+        cat <<EOF | sudo microk8s kubectl apply -f - 
+          apiVersion: v1
+          kind: Service
+          metadata:
+            labels:
+              app: podinfo
+            name: podinfo
+          spec:
+            ports:
+            - name: http
+              port: 9898
+            selector:
+              app: podinfo
+          ---
+          apiVersion: extensions/v1beta1
+          kind: Deployment
+          metadata:
+            labels:
+              app: podinfo
+            name: podinfo
+          spec:
+            replicas: 1
+            selector:
+              matchLables:
+                app: podinfo
+            template:
+              metadata:
+                labels:
+                  app: podinfo
+              spec:
+                containers:
+                  - name: podinfo
+                    image: stefanprodan/podinfo:4.0.6
+                    ports:
+                      - containerPort: 9898
+                    resources:
+                      limits:
+                        cpu: 100m
+                        memory: 40Mi
+                      requests:
+                        cpu: 20m
+                        memory: 40Mi
+                  - name: tunnel
+                    image: msnelling/cloudflared:2020.6.3
+                    env:
+                      - name: TUNNEL_HOSTNAME
+                        value: $TUNNEL_HOSTNAME
+                      - name: TUNNEL_ORIGIN_URL
+                        value: http://localhost:9898
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v2
