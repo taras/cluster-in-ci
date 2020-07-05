@@ -13,47 +13,32 @@ jobs:
       run: |
         export PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
         echo "::set-env name=PR_NUMBER::$PR_NUMBER"
-        echo "::set-env name=CLUSTER_CNAME::pr-$PR_NUMBER.cluster-in-ci."
-        echo "::set-env name=CLUSTER_HOST::$CLUSTER_CNAMEtaras.app"
+        echo "::set-env name=CLUSTER_HOST::pr-$PR_NUMBER-cluster-in-ci.taras.app"
 
     - name: Create Cloudflare Credentials file
       run: mkdir $HOME/.cloudflared && echo $CERT_PEM > $HOME/.cloudflared/cert.pem
       env:
         CERT_PEM: ${{secrets.CLOUDFLARED_TUNNEL_PEM}}
 
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
+    - name: Install microk8s with snap
+      run: sudo snap install microk8s --classic --channel=1.18/stable
 
-    - name: Install Cloudflare CLI
-      run: npm install -g cloudflare-cli
+    - name: Verify that microk8s started
+      run: sudo microk8s status --wait-ready
 
-    - name: Create subdomain for PR
-      run: cfcli -a -t CNAME add $CLUSTER_CNAME cluster-in-ci.taras.app || true
-      env:
-        CF_API_KEY: ${{secrets.CLOUDFLARE_DNS_API_TOKEN}}
-        CF_API_DOMAIN: taras.app
+    - name: "Enable microk8s extensions: dns, helm3"
+      run: sudo microk8s enable dns helm3
 
-    # - name: Install microk8s with snap
-    #   run: sudo snap install microk8s --classic --channel=1.18/stable
+    - name: Write Cloudflare Credentials to Kubernetes secrets
+      run: sudo microk8s kubectl create secret generic $CLUSTER_HOST --from-file="$HOME/.cloudflared/cert.pem"
+    - run: sudo microk8s kubectl get secret
 
-    # - name: Verify that microk8s started
-    #   run: sudo microk8s status --wait-ready
-
-    # - name: "Enable microk8s extensions: dns, helm3"
-    #   run: sudo microk8s enable dns helm3
-
-    # - name: Write Cloudflare Credentials to Kubernetes secrets
-    #   run: sudo microk8s kubectl create secret generic taras.app --from-file="$HOME/.cloudflared/cert.pem"
-    # - run: sudo microk8s kubectl get secret
-
-    # - run: sudo microk8s helm3 repo add podinfo https://stefanprodan.github.io/podinfo
-    # - run: |
-    #     sudo microk8s helm3 upgrade --install --wait frontend \
-    #     --set replicaCount=1 \
-    #     --set backend=http://backend-podinfo:9898/echo \
-    #     podinfo/podinfo
+    - run: sudo microk8s helm3 repo add podinfo https://stefanprodan.github.io/podinfo
+    - run: |
+        sudo microk8s helm3 upgrade --install --wait frontend \
+        --set replicaCount=1 \
+        --set backend=http://backend-podinfo:9898/echo \
+        podinfo/podinfo
     
-    # - name: "Test podinfo has hook-delete-policy: hook-succeeded"
-    #   run: sudo microk8s helm3 test frontend
+    - name: "Test podinfo has hook-delete-policy: hook-succeeded"
+      run: sudo microk8s helm3 test frontend
