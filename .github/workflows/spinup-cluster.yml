@@ -25,7 +25,7 @@ jobs:
       run: npm install -g cloudflare-cli
 
     - name: Create subdomain for PR
-      run: cfcli add $CLUSTER_CNAME cluster-in-ci.taras.app --type=CNAME
+      run: cfcli -a -t CNAME add ${CLUSTER_CNAME} cluster-in-ci.taras.app
       env:
         CF_API_KEY: ${{secrets.CLOUDFLARE_DNS_API_TOKEN}}
         CF_API_DOMAIN: taras.app
