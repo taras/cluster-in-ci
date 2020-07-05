@@ -84,6 +84,22 @@ jobs:
                       value: $TUNNEL_HOSTNAME
                     - name: TUNNEL_ORIGIN_URL
                       value: http://localhost:9898
+                  resources:
+                    limits:
+                      cpu: 10m
+                      memory: 20Mi
+                    requests:
+                      cpu: 10m
+                      memory: 20Mi
+                  volumeMounts:
+                  - mountPath: /etc/cloudflared
+                    name: tunnel-secret
+                    readOnly: true
+                terminationGracePeriodSeconds: 60
+                volumes:
+                - name: tunnel-secret
+                  secret:
+                    secretName: $TUNNEL_HOSTNAME                   
         EOF
 
     - name: Setup tmate session
