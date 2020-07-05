@@ -16,7 +16,7 @@ jobs:
 
     - name: Setup environment variables
       run: |
-        export PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = \"/\" } ; { print $3 }');
+        export PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = \"/\" } ; { print $3 }')
         echo "::set-env PR_NUMBER=$PR_NUMBER"
         echo "::set-env CLUSTER_CNAME=pr-$PR_NUMBER.cluster-in-ci"
         echo "::set-env CLUSTER_HOST=$CLUSTER_CNAME.taras.app"
@@ -25,7 +25,7 @@ jobs:
       run: npm install -g cloudflare-cli
 
     - name: Create subdomain for PR
-      run: cfcli add CNAME $CLUSTER_CNAME cluster-in-ci.taras.app
+      run: cfcli add $CLUSTER_CNAME cluster-in-ci.taras.app --type=CNAME
       env:
         CF_API_KEY: ${{secrets.CLOUDFLARE_DNS_API_TOKEN}}
         CF_API_DOMAIN: taras.app
