@@ -14,15 +14,17 @@ jobs:
       with:
         node-version: '12.x'
 
-    - run: sudo apt install jq
+    - name: Setup environment variables
+      run: |
+        echo "::set-env PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = \"/\" } ; { print $3 }')"
+        echo "::set-env CLUSTER_CNAME=pr-$PR_NUMBER.cluster-in-ci"
+        echo "::set-env CLUSTER_HOST=$CLUSTER_CNAME.taras.app"
 
     - name: Install Cloudflare CLI
       run: npm install -g cloudflare-cli
 
-    - run: jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH"
-
     - name: Create subdomain for PR
-      run: cfcli add CNAME $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH") cluster-in-ci.taras.app
+      run: cfcli add CNAME $CLUSTER_CNAME cluster-in-ci.taras.app
       env:
         CF_API_KEY: ${{secrets.CLOUDFLARE_DNS_API_TOKEN}}
         CF_API_DOMAIN: taras.app
