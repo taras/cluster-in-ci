@@ -35,3 +35,6 @@ jobs:
 
     - name: Start podinfo
       run: sudo microk8s kubectl apply -k github.com/stefanprodan/podinfo//kustomize
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v2
