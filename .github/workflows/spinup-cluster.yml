@@ -34,4 +34,4 @@ jobs:
     - run: sudo microk8s kubectl get secret
 
     - name: Start podinfo
-      run: kubectl apply -k github.com/stefanprodan/podinfo//kustomize
+      run: sudo kubectl apply -k github.com/stefanprodan/podinfo//kustomize
