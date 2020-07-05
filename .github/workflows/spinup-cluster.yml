@@ -36,54 +36,54 @@ jobs:
     - name: Start podinfo
       run: |
         cat <<EOF | sudo microk8s kubectl apply -f - 
-          apiVersion: v1
-          kind: Service
-          metadata:
-            labels:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          labels:
+            app: podinfo
+          name: podinfo
+        spec:
+          ports:
+          - name: http
+            port: 9898
+          selector:
+            app: podinfo
+        ---
+        apiVersion: extensions/v1beta1
+        kind: Deployment
+        metadata:
+          labels:
+            app: podinfo
+          name: podinfo
+        spec:
+          replicas: 1
+          selector:
+            matchLables:
               app: podinfo
-            name: podinfo
-          spec:
-            ports:
-            - name: http
-              port: 9898
-            selector:
-              app: podinfo
-          ---
-          apiVersion: extensions/v1beta1
-          kind: Deployment
-          metadata:
-            labels:
-              app: podinfo
-            name: podinfo
-          spec:
-            replicas: 1
-            selector:
-              matchLables:
+          template:
+            metadata:
+              labels:
                 app: podinfo
-            template:
-              metadata:
-                labels:
-                  app: podinfo
-              spec:
-                containers:
-                  - name: podinfo
-                    image: stefanprodan/podinfo:4.0.6
-                    ports:
-                      - containerPort: 9898
-                    resources:
-                      limits:
-                        cpu: 100m
-                        memory: 40Mi
-                      requests:
-                        cpu: 20m
-                        memory: 40Mi
-                  - name: tunnel
-                    image: msnelling/cloudflared:2020.6.3
-                    env:
-                      - name: TUNNEL_HOSTNAME
-                        value: $TUNNEL_HOSTNAME
-                      - name: TUNNEL_ORIGIN_URL
-                        value: http://localhost:9898
+            spec:
+              containers:
+                - name: podinfo
+                  image: stefanprodan/podinfo:4.0.6
+                  ports:
+                    - containerPort: 9898
+                  resources:
+                    limits:
+                      cpu: 100m
+                      memory: 40Mi
+                    requests:
+                      cpu: 20m
+                      memory: 40Mi
+                - name: tunnel
+                  image: msnelling/cloudflared:2020.6.3
+                  env:
+                    - name: TUNNEL_HOSTNAME
+                      value: $TUNNEL_HOSTNAME
+                    - name: TUNNEL_ORIGIN_URL
+                      value: http://localhost:9898
         EOF
 
     - name: Setup tmate session
