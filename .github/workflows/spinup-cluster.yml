@@ -10,7 +10,9 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Create Cloudflare Credentials file
-      run: mkdir $HOME/.cloudflared && echo ${{secrets.CLOUDFLARED_TUNNEL_PEM}} > $HOME/.cloudflared/cert.pem
+      run: mkdir $HOME/.cloudflared && echo $CERT_PEM > $HOME/.cloudflared/cert.pem
+      env:
+        CERT_PEM: ${{secrets.CLOUDFLARED_TUNNEL_PEM}}
 
     - name: Use Node.js
       uses: actions/setup-node@v1
