@@ -84,6 +84,7 @@ jobs:
                         value: $TUNNEL_HOSTNAME
                       - name: TUNNEL_ORIGIN_URL
                         value: http://localhost:9898
+        EOF
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v2
