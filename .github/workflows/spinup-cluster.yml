@@ -17,9 +17,12 @@ jobs:
     - run: sudo apt install jq
 
     - name: Install Cloudflare CLI
-      run: |
-        npm install -g cloudflare-cli
-        cfcli add CNAME $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH") cluster-in-ci.taras.app
+      run: npm install -g cloudflare-cli
+
+    - run: jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH"
+
+    - name: Create subdomain for PR
+      run: cfcli add CNAME $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH") cluster-in-ci.taras.app
       env:
         CF_API_KEY: ${{secrets.CLOUDFLARE_DNS_API_TOKEN}}
         CF_API_DOMAIN: taras.app
