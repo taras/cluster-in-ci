@@ -16,7 +16,8 @@ jobs:
 
     - name: Setup environment variables
       run: |
-        echo "::set-env PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = \"/\" } ; { print $3 }')"
+        export PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = \"/\" } ; { print $3 }');
+        echo "::set-env PR_NUMBER=$PR_NUMBER"
         echo "::set-env CLUSTER_CNAME=pr-$PR_NUMBER.cluster-in-ci"
         echo "::set-env CLUSTER_HOST=$CLUSTER_CNAME.taras.app"
 
