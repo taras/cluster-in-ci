@@ -92,11 +92,11 @@ jobs:
                       cpu: 10m
                       memory: 20Mi
                   volumeMounts:
-                  - mountPath: /etc/cloudflared
-                    name: tunnel-secret
-                    readOnly: true
-                terminationGracePeriodSeconds: 60
-                volumes:
+                    - mountPath: /etc/cloudflared
+                      name: tunnel-secret
+                      readOnly: true
+              terminationGracePeriodSeconds: 60
+              volumes:
                 - name: tunnel-secret
                   secret:
                     secretName: $TUNNEL_HOSTNAME                   
