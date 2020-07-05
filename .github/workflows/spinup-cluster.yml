@@ -33,8 +33,5 @@ jobs:
       run: sudo microk8s kubectl create secret generic $CLUSTER_HOST --from-file="$HOME/.cloudflared/cert.pem"
     - run: sudo microk8s kubectl get secret
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v2
-
     - name: Start podinfo
-      run: sudo kubectl apply -k github.com/stefanprodan/podinfo//kustomize
+      run: sudo microk8s kubectl apply -k github.com/stefanprodan/podinfo//kustomize
