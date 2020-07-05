@@ -33,12 +33,5 @@ jobs:
       run: sudo microk8s kubectl create secret generic $CLUSTER_HOST --from-file="$HOME/.cloudflared/cert.pem"
     - run: sudo microk8s kubectl get secret
 
-    - run: sudo microk8s helm3 repo add podinfo https://stefanprodan.github.io/podinfo
-    - run: |
-        sudo microk8s helm3 upgrade --install --wait frontend \
-        --set replicaCount=1 \
-        --set backend=http://backend-podinfo:9898/echo \
-        podinfo/podinfo
-    
-    - name: "Test podinfo has hook-delete-policy: hook-succeeded"
-      run: sudo microk8s helm3 test frontend
+    - name: Start podinfo
+      run: kubectl apply -k github.com/stefanprodan/podinfo//kustomize
