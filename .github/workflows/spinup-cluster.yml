@@ -58,7 +58,7 @@ jobs:
         spec:
           replicas: 1
           selector:
-            matchLables:
+            matchLabels:
               app: podinfo
           template:
             metadata:
