@@ -86,8 +86,6 @@ jobs:
                       value: http://127.0.0.1:9898
                     - name: TUNNEL_ORIGIN_CERT
                       value: /etc/cloudflared/cert.pem
-                    - name: TUNNEL_ORIGIN_SERVER_NAME
-                      value: taras.app
                   resources:
                     limits:
                       cpu: 10m
