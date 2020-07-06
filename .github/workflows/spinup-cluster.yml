@@ -99,6 +99,7 @@ jobs:
                     httpGet:
                       host: $TUNNEL_HOSTNAME
                       scheme: HTTPS
+                      port: 443
 
               terminationGracePeriodSeconds: 60
               volumes:
