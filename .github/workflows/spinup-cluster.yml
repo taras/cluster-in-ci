@@ -16,7 +16,7 @@ jobs:
         echo "::set-env name=TUNNEL_HOSTNAME::pr-$PR_NUMBER-cluster-in-ci.taras.app"
 
     - name: Create Cloudflare Credentials file
-      run: mkdir $HOME/.cloudflared && echo $CERT_PEM > $HOME/.cloudflared/cert.pem
+      run: mkdir $HOME/.cloudflared && echo -n $CERT_PEM > $HOME/.cloudflared/cert.pem
       env:
         CERT_PEM: ${{secrets.CLOUDFLARED_TUNNEL_PEM}}
 
