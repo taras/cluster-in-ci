@@ -84,6 +84,8 @@ jobs:
                       value: $TUNNEL_HOSTNAME
                     - name: TUNNEL_ORIGIN_URL
                       value: http://localhost:9898
+                    - name: TUNNEL_ORIGIN_CERT
+                      value: /etc/cloudflared/cert.pem
                   resources:
                     limits:
                       cpu: 10m
