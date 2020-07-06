@@ -95,6 +95,11 @@ jobs:
                     - mountPath: /etc/cloudflared
                       name: tunnel-secret
                       readOnly: true
+                  readinessProbe:
+                    httpGet:
+                      host: $TUNNEL_HOSTNAME
+                      scheme: HTTPS
+
               terminationGracePeriodSeconds: 60
               volumes:
                 - name: tunnel-secret
