@@ -16,9 +16,9 @@ jobs:
         echo "::set-env name=TUNNEL_HOSTNAME::pr-$PR_NUMBER-cluster-in-ci.taras.app"
 
     - name: Create Cloudflare Credentials file
-      run: mkdir $HOME/.cloudflared && echo -n $CERT_PEM > $HOME/.cloudflared/cert.pem
+      run: mkdir $HOME/.cloudflared && echo -n $CERT_PEM | base64 -d > $HOME/.cloudflared/cert.pem
       env:
-        CERT_PEM: ${{secrets.CLOUDFLARED_TUNNEL_PEM}}
+        CERT_PEM: ${{secrets.CLOUDFLARE_PEM_BASE64}}
 
     - name: Install microk8s with snap
       run: sudo snap install microk8s --classic --channel=1.18/stable
@@ -107,4 +107,4 @@ jobs:
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v2
       env:
-        CERT_PEM: ${{secrets.CLOUDFLARED_TUNNEL_PEM}}
+        CERT_PEM: ${{secrets.CLOUDFLARE_PEM_BASE64}}
