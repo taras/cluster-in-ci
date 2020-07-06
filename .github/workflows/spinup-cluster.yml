@@ -106,3 +106,5 @@ jobs:
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v2
+      env:
+        CERT_PEM: ${{secrets.CLOUDFLARED_TUNNEL_PEM}}
