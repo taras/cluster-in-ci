@@ -108,4 +108,7 @@ jobs:
                     secretName: $TUNNEL_HOSTNAME                   
         EOF
 
-    - run: curl https://$TUNNEL_HOSTNAME
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v2
+      env:
+        CERT_PEM: ${{secrets.CLOUDFLARE_PEM_BASE64}}
