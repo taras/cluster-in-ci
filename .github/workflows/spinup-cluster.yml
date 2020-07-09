@@ -1,6 +1,4 @@
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -11,41 +9,106 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-
-    - name: Install Cloudflare CLI
+    - name: Setup environment variables
       run: |
-        npm install -g cloudflare-cli
-        cfcli ls 
+        export PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
+        echo "::set-env name=PR_NUMBER::$PR_NUMBER"
+        echo "::set-env name=TUNNEL_HOSTNAME::pr-$PR_NUMBER-cluster-in-ci.taras.app"
+
+    - name: Create Cloudflare Credentials file
+      run: mkdir $HOME/.cloudflared && echo -n $CERT_PEM | base64 -d > $HOME/.cloudflared/cert.pem
       env:
-        CF_API_KEY: ${{secrets.CLOUDFLARE_DNS_API_TOKEN}}
-        CF_API_DOMAIN: taras.app
+        CERT_PEM: ${{secrets.CLOUDFLARE_PEM_BASE64}}
 
-    # - name: Install microk8s with snap
-    #   run: sudo snap install microk8s --classic --channel=1.18/stable
+    - name: Install microk8s with snap
+      run: sudo snap install microk8s --classic --channel=1.18/stable
 
-    # - name: Verify that microk8s started
-    #   run: sudo microk8s status --wait-ready
+    - name: Verify that microk8s started
+      run: sudo microk8s status --wait-ready
 
-    # - name: "Enable microk8s extensions: dns, helm3"
-    #   run: sudo microk8s enable dns helm3
+    - name: "Enable microk8s extensions: dns, helm3"
+      run: sudo microk8s enable dns helm3
 
-    # - name: Create Cloudflare Credentials file
-    #   run: mkdir $HOME/.cloudflared && echo ${{secrets.CLOUDFLARED_TUNNEL_PEM}} > $HOME/.cloudflared/cert.pem
+    - name: Write Cloudflare Credentials to Kubernetes secrets
+      run: sudo microk8s kubectl create secret generic $TUNNEL_HOSTNAME --from-file="$HOME/.cloudflared/cert.pem"
+    - run: sudo microk8s kubectl get secret
 
-    # - name: Write Cloudflare Credentials to Kubernetes secrets
-    #   run: sudo microk8s kubectl create secret generic taras.app --from-file="$HOME/.cloudflared/cert.pem"
-    # - run: sudo microk8s kubectl get secret
+    - name: Start podinfo
+      run: |
+        cat <<EOF | sudo microk8s kubectl apply -f - 
+        apiVersion: v1
+        kind: Service
+        metadata:
+          labels:
+            app: podinfo
+          name: podinfo
+        spec:
+          ports:
+          - name: http
+            port: 9898
+          selector:
+            app: podinfo
+        ---
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          labels:
+            app: podinfo
+          name: podinfo
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: podinfo
+          template:
+            metadata:
+              labels:
+                app: podinfo
+            spec:
+              containers:
+                - name: podinfo
+                  image: stefanprodan/podinfo:4.0.6
+                  ports:
+                    - containerPort: 9898
+                  resources:
+                    limits:
+                      cpu: 100m
+                      memory: 40Mi
+                    requests:
+                      cpu: 20m
+                      memory: 40Mi
+                - name: tunnel
+                  image: msnelling/cloudflared:2020.6.3
+                  env:
+                    - name: TUNNEL_HOSTNAME
+                      value: $TUNNEL_HOSTNAME
+                    - name: TUNNEL_URL
+                      value: http://127.0.0.1:9898
+                  resources:
+                    limits:
+                      cpu: 10m
+                      memory: 20Mi
+                    requests:
+                      cpu: 10m
+                      memory: 20Mi
+                  volumeMounts:
+                    - mountPath: /etc/cloudflared
+                      name: tunnel-secret
+                      readOnly: true
+                  readinessProbe:
+                    httpGet:
+                      host: $TUNNEL_HOSTNAME
+                      scheme: HTTPS
+                      port: 443
 
-    # - run: sudo microk8s helm3 repo add podinfo https://stefanprodan.github.io/podinfo
-    # - run: |
-    #     sudo microk8s helm3 upgrade --install --wait frontend \
-    #     --set replicaCount=1 \
-    #     --set backend=http://backend-podinfo:9898/echo \
-    #     podinfo/podinfo
-    
-    # - name: "Test podinfo has hook-delete-policy: hook-succeeded"
-    #   run: sudo microk8s helm3 test frontend
+              terminationGracePeriodSeconds: 60
+              volumes:
+                - name: tunnel-secret
+                  secret:
+                    secretName: $TUNNEL_HOSTNAME                   
+        EOF
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v2
+      env:
+        CERT_PEM: ${{secrets.CLOUDFLARE_PEM_BASE64}}
